@@ -1,0 +1,270 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={ML Algorithm},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{ML Algorithm}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Loading the datasets}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{itemize}
+\item
+  First of all I have imported all the necessary libraries
+\item
+  I have uploaded all the datasets on google drive and extracted it onto
+  my code
+\item
+  Then I have created their pandas dataframes
+\end{itemize}
+
+Preprocessing the data
+
+\begin{itemize}
+\item
+  I have created x as the independent columns and y as target column
+  then I have used label-encoder to convert into 0,1,2.. type for easy
+  to classify
+\item
+  I have used cross validation for improving the models accuracy and
+  used train\_test\_split of the given test-size
+\item
+  Then I created subsets of train,val and test groups and returned it
+\end{itemize}
+
+Class ML model
+
+\begin{itemize}
+\item
+  It defines a neural network using PyTorch
+\item
+  Input\_dim-number of input features ,output\_dim-no of output features
+  ,hidden\_dim-no of units in hidden layer
+\item
+  Self.fc1-first fully connected linear layer, self.fc-seconf fully
+  connected layer which is hidden to output,self.relu-ReLu activation
+  func
+\item
+  When input is end ,flow through fc1,relu and then fc2 and then
+  returned
+\item
+  The func train\_localmodel trains the local model and creates a model
+  using the MLmodel constructor
+\item
+  I have used cross-entropy for set up loss func and adam-optimiser to
+  uodate model weights during training
+\item
+  Created pytorch tensors form features and labels in subset
+\item
+  Then for epoch no of times , the input data is passing through the
+  layer in which the following was happening - model.train(): Sets the
+  model to training mode optimizer.zero\_grad(): Clears previous
+  gradients , ans = model(x\_tensor): Performs a forward pass through
+  the model , loss = criteria(ans, y\_tensor): Computes the loss between
+  model predictions and the true labels , loss.backward(): Computes
+  gradients via backpropagation , optimizer.step(): Updates model
+  weights based on the gradient
+\item
+  with torch.no\_grad(): model.eval(): Switches the model to evaluation
+  mode
+\item
+  Then the training function finally returns the model
+\end{itemize}
+
+Aggregating weights and evaluating model
+
+\begin{itemize}
+\item
+  Aggeregtae\_weights takes a list of local model dictionaries and takes
+  their average to produce a new globalset of weights
+\item
+  Localset is a list where each item is a dictionary of modal weights
+\item
+  For every key , it adds up the parameter from all the dict and divide
+  by the no of dict to obtain the value of same key in globalset
+\item
+  This is the baises of federated-learning which aggregates parameters
+  from multiple clients to update the global model
+\item
+  evaluate\_model returns the accuracy of a pytorch model on a given
+  dataset
+\item
+  after training a model , this func says how well the model perfoms on
+  unseen dataset
+\end{itemize}
+
+main controlling function for decentralized training
+
+\begin{itemize}
+\item
+  taken a list of datasets and its corresponding target columns
+\item
+  defined a function train\_and\_evaluate which is linked to the backend
+  code of web platform and chosen\_idx is given by the user form the
+  frontend
+\item
+  first I have done centralized training i.e by taking whole dataset and
+  computed its accuracy by calling the above functions
+\item
+  then I have spilt the dataset into three subsets to train them
+  individually on local model and then aggregate them to update the
+  global model
+\item
+  for each of the three subsets , a local model is created with the
+  right shape which is initialized with the current global weights for
+  this dataset
+\item
+  this local model is trained on the clients local data and then its
+  weight is stored for aggregation
+\item
+  then the new agg\_wt is the average of the weights for these three
+  subsets and then this used to update the global-model of this datset
+\item
+  then the global model is tested on the combined-test set getting the
+  federated test accuracy .
+\item
+  this federated accuracy is compared with the centralized accuracy
+\item
+  this is returned to the backend and showed at the screen of the client
+\end{itemize}
+
+Defence system
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Differential Privacy -- noise addition
+\end{enumerate}
+
+\begin{itemize}
+\item
+  We will add calliberated random noise to each clients local update
+  before sending to the server
+\item
+  Due to this , privacy increase but accuracy decreases
+\end{itemize}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\item
+  Secure aggregation(masking)
+\end{enumerate}
+
+\begin{itemize}
+\item
+  In this , we mask each clients update with a random vector . server
+  only learns the sum not individuals
+\item
+  Each clients add a random mas and another substracts it , so masks
+  cancel out in aggregate
+\item
+  Privacy increase but accuracy and robustness almost constant
+\end{itemize}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\item
+  Robust aggregation
+\end{enumerate}
+
+\begin{itemize}
+\item
+  Instead of averaging all updates , use robust aggregation to resist
+  outliers
+\item
+  Robustness increase but accuracy and privacy might be constant
+\end{itemize}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\item
+  Client update validation and anomaly detection
+\end{enumerate}
+
+\begin{itemize}
+\item
+  Detect and discard updates that are too far from the mean
+\item
+  We need to call this func before updating the global model
+\item
+  Robustness increase whereas privacy,accuracy vary
+\end{itemize}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\item
+  Sybil attack prevention
+\end{enumerate}
+
+\begin{itemize}
+\item
+  In this , we limit the number of updates per IP/time
+\item
+  Robustness increase and privacy,accuracy remains same
+\end{itemize}
+
+\hypertarget{i-have-put-the-defence-system-code-into-the-frontendbackend-part-itself-rather-than-creating-separate-part-for-it-and-then-integrating-it}{%
+\subsection{I have put the defence system code into the frontend,backend
+part itself rather than creating separate part for it and then
+integrating
+it}\label{i-have-put-the-defence-system-code-into-the-frontendbackend-part-itself-rather-than-creating-separate-part-for-it-and-then-integrating-it}}
+
+\end{document}
